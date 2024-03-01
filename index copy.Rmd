@@ -1,0 +1,323 @@
+---
+title: "Crime Statistics: From Seattle and Beyond"
+author: "Draco Bynum, Daniel Penkov, Ryan Crowley, and Tim Hahn"
+date: "2/24/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+library("knitr")
+
+knitr::opts_chunk$set(echo = TRUE)
+
+source("analysis.R")
+source("wb_murder.R")
+library("knitr")
+source("crime_area_se.R")
+source("city_comparison.R")
+source("wb_murder.R")
+source("seattle_vs_USA_homicide.R")
+
+```
+
+
+## Section 1. Problem Domain Description
+
+"Criminal behavior" has been, and always will be, an issue that affects the whole world. Our team was interested in comparing data pertaining to different criminal behavior in Seattle, the United States as a whole, as well as the rest of the world. For criminal data throughout the world, we looked at intentional homicide (murder) statistics from the [World Bank API](https://data.worldbank.org/indicator/VC.IHR.PSRC.P5?end=2017&start=1990&view=chart). Intentional homocides are  described as "unlawful homicides purposely inflicted as a result of domestic disputes, interpersonal violence, violent conflicts over land resources, intergang violence over turf or control, and predatory violence and killing by armed groups." When you look at the world around us today, it is easy to be bleak or depressed. However, our team feels that through our analysis, we can hopefully show that the world is becoming a safer place to live.
+
+On a more local scope, we looked at the [City of Seattle](https://data.seattle.gov/) open data portal, which provided us with some insight into the various crime rates in the Seattle area. The portal is far wider in scope than just crime, including information about property rights, education, socioeconomics and information about City of Seattle employees. This is a powerful information source, especially to us as residents of this city. Using this information we can help others to have a deeper understanding of the crime statistics of their university's home.
+
+In addition to Seattle crime data, our analysis has also led us to [Denver Open Source Crime Data](https://www.denvergov.org/opendata/dataset/city-and-county-of-denver-crime) and [Washington D.C Open Source Crime Data](https://dcatlas.dcgis.dc.gov/crimecards/) in order to compare some of our city's crime rates to cities with similar populations in the United States in order to get an additional meaningful perspective of our city's public safety.
+
+
+### Subsection 1.1 Analysis Questions
+
+**Question 1:**
+How has the average homicide rate (per 100,000 people) changed globally in the last 26 years?
+
+**Question Justification:**
+As somebody who is seeing terrible news across the world everyday, I was interested in analyzing global criminal (murder) data and seeing how it has changed in the past ~30 years. The World Bank data set will answer this question because it includes the homocide rates for various countries around the world for the last ~30 years.
+
+
+**Question 2:**
+Over the past ten years, what has been the most dangerous area (cardinal direction) in the Seattle area based on the crime rate?
+
+**Question Justification:** My question is interesting because, as members who live in Seattle, knowing the areas that are dangerous is useful to stay safe whether you are visiting or living in a particular area of Seattle. The Seattle Crime Data supports answering this question because it includes the cardinal direction that crime is committed in, so the data can show the crime rate by area, ultimately showing the most dangerous section of Seattle. 
+
+
+**Question 3:**
+Does Seattle have a higher or lower homicide rate than the rest of the United States overall?
+
+**Question Justification:**
+This question is very interesting to me as a Seattle resident, and while only one measure of safety in a city, comparison to the National Average helps to see if local regulations and police tactics are effective in preventing crime in our area, particularly homicide.
+
+**Question 4:**
+How does Seattle compare to the two closest US cities in population -- Denver and Washington D.C. -- in robbery, burglary, and aggravated assault rates in 2018?
+
+**Question Justification: **
+This question is very informative, as answering it will show how well Seattle compares to cities with similar populations in destructive crime restriction, ultimately informing us of Seattle's safety from the discussed crime types. The Seattle, Denver, and Washington D.C open crime data sets would help answer this question by providing information on all crime in these similarly populated cities in the year 2018.
+
+
+<br/>
+<br/>
+<br/>
+
+
+## Section 2. Data Description
+
+The two main data sets that we used are the **World Bank Data set**, and the **Seattle City Data set**. We chose to break them down even further so they have a focus on **crime** and **public health** in the World and in Seattle. In addition to data analysis regarding this data, we used the **City of Denver's Open Data Catalog** as well as the **Metropolitan Police Department CrimeCards** data set, in order to further study Denver and Washington D.C. crime alongside Seattle.
+<br/>
+<br/>
+
+### Seattle Crime Data Set
+
+The Seattle Data was made open to the public by the by the Mayor of Seattle in 2016 so the data could be viewed by anyone. The data was collected from the city and more specifically the Seattle Crime Data was received from the Seattle Police Department (SPD). [link:](https://data.seattle.gov/Public-Safety/Crime-Data/4fs7-3vj5)
+<br/>
+<br/>
+
+
+```{r sample seattle crime data, echo=FALSE}
+kable(sample_df2)
+
+
+
+main_summary_list <- summary_analysis_2.2
+
+
+```
+<br/>
+
+Explanations of the columns in the Seattle crime data:
+
+- Crime.Subcategory shows the type of crime that was committed
+- Precinct explains the cardinal direction in Seattle 
+- Neighborhood shows the specific area of Seattle in the Precinct
+
+<br/>
+<br/>
+
+### Summary Statistics Seattle Crime Data
+
+From the sample of the full Seattle Crime data frame we took the average amount of crimes that happened in a given year. The average per year was around `r main_summary_list[[1]]` crimes committed.  With the max amount of crimes in the year `r high_crime$Year` being `r high_crime$num_crime`  committed crimes (see plot below).
+
+
+
+```{r year plot, echo=FALSE}
+year_data_plot
+```
+
+<br/>
+
+Since the raw data takes all the years it has data for into consideration it causes there to be some outliers in plot. For example, the low outliers the from the year 1975 to 2017 are very low in comparison to the other points plotted.  Specifically, the lowest with the amount of 1 crime committed for the years: `r low_crime$Year`. We believe this is due to how new the data has been collected so it is more difficult to obtain the data that happened in the past rather than focus on the data that is currently able to be added to the data source.  Also another low outlier is from the year 2019 with `r year_data["2019", "num_crime"]`crimes committed. This is possibly due to the data still needing to be processed before added to the set since it is newer data. As far as high value outliers there did not seem to be any present.  Lastly there were some rows that contained blank information so we filtered them out to only obtain the useful information.
+<br/>
+
+### World Bank Data Set:
+
+
+For our second data set, we looked at world homicide data coming from the UN Office on Drugs and Crime's International Homicide Statistics database.  It is made public by the World Bank website.  This specific data set focuses on intentional homicide rates (per 100,000 people) in each country of the world.  [link:](https://data.worldbank.org/indicator/VC.IHR.PSRC.P5)
+<br/> 
+***NOTE:*** Some countries did not have data avalible
+<br/> 
+Here is a random sample of the original raw data set:
+
+```{r sample world homicide, echo=FALSE}
+kable(sample_data)
+
+
+
+```
+
+
+Data Explanation:
+
+- ***value:*** The *value* column represents intentional homicides (murder) per 100,000 people in each country. According to the [World Bank Data Set](https://data.worldbank.org/indicator/VC.IHR.PSRC.P5), an intentional homicide is "inflicted as a result of domestic disputes, interpersonal violence, violent conflicts over land resources, intergang violence over turf or control, and predatory violence and killing by armed groups."
+
+### World Bank Summary Statistics:
+
+Here are some interesting summary statistics from the World Bank Data Set:<br/> 
+- The *average homicide rate* across the world for the last 26 years is **`r mean_murder_rate`**.<br/> 
+- Out of all the observations, El Salvador had the *highest homicide rate* of **`r max_murder_rate`** in 1995.<br/> 
+- Additionaly, El Salvador had the top **`r country_murder_rate`** *highest homicide rates* of all the countries and years.<br/> 
+- Out of all the observations, Cyprus had the *lowest homicide rate* of **`r min_murder_rate`** in 2002.<br/> 
+
+***Data Trends Plot***<br/> 
+```{r plot, echo=FALSE}
+plot_homicide
+
+```
+
+### 2018 Crime Data Sets
+
+In order to compare the 2018 crime rates of Seattle, Denver, and Washington D.C., we needed to find data sets of all crimes reported in the three cities for that year. 
+
+### Denver 2018 Crime Data
+
+We found a Denver Crime Data Set from the City of Denver's [Open Data Catalog](https://www.denvergov.org/opendata/dataset/city-and-county-of-denver-crime) with criminal offenses reported for the previous 5 calender years. This data has been collected by people working for the City and County of Denver.
+
+Sample of Denver Crime Data Set:
+
+```{r denver_sample, echo=FALSE}
+kable(denver_sample)
+```
+
+In this data set, the **OFFENSE_CATEGORY_ID** column defines the category of crime under which that reported crime falls. 
+
+### Washington D.C 2018 Crime Data
+
+We found Crime Data for Washington D.C. from the city's Police Department [CrimeCard Portal](https://dcatlas.dcgis.dc.gov/crimecards/). This data was collected by resources employed through the Metropolitan Police Department.
+
+Sample of Washington D.C. Crime Data Set:
+
+```{r dc_sample, echo=FALSE}
+kable(dc_sample)
+```
+
+In this data set, the **offense.text** column defines the category of crime under which that reported crime falls.
+
+
+### Seattle 2018 Crime Summary Analysis
+
+In the Seattle 2018 data set, there are a total of 30 categories of crime recorded, with a max value of 	13,026 CAR PROWL cases, and a min of 2 GAMBLE cases. 
+
+The following table and plot illistrate the set of categories, as well as their distribution:
+
+```{r seattle_summary, echo=FALSE}
+kable(seattle_summary)
+```
+
+```{r seattle_2018_summary_plot, echo=FALSE}
+seattle_2018_summary_plot
+
+```
+
+Within this data set, GAMBLE and LOITERING cases are huge outliers, with 2 and 7 cases reported for 2018 respectfully. CAR PROWL cases also immensely outnumber the average of crime rates for this year. Due to a significant range in the crime stats, the 11 least crimes could all be considered outliers, as they pale in comparison to the amount of crimes the top 6 crimes categories accumulated.
+
+### Denver 2018 Crime Summary Analysis
+
+In the Denver 2018 data set, there are a total of 15 categories of crime recorded, with a max value of 	18,637 traffic-accident cases, and a min of 40 murder cases. 
+
+The following table and plot illistrate the set of categories, as well as their distribution:
+
+```{r denver_summary, echo=FALSE}
+kable(denver_summary)
+```
+
+```{r denver_2018_summary_plot, echo=FALSE}
+denver_2018_summary_plot
+
+```
+
+Within this data set, murder and arson cases are significant outliers, with 40 and 90 cases reported for 2018 respectfully. Additionally, robbery, sexual-assault, and white-collar-crime had very low crime rates. 
+
+### Washington 2018 D.C. Crime Summary Analysis
+
+In the Seattle 2018 data set, there are a total of 9 categories of crime recorded, with a max value of 	14,209 theft/other cases, and a min of 5 arson cases. 
+
+The following table and plot illistrate the set of categories, as well as their distribution:
+
+```{r dc_summary, echo=FALSE}
+kable(dc_summary)
+```
+
+```{r dc_2018_summary_plot, echo=FALSE}
+dc_2018_summary_plot
+
+```
+
+Within this data set, arson, homicide, and sex abuse cases are significant outliers, with 5, 160, and 276 cases reported for 2018 respectfully.
+<br/>
+<br/>
+<br/>
+
+## Section 3: Specific Question Analysis
+
+### How has the average global homicide rate (per 100,000 people) changed in the last 26 years?
+
+The intentonal homicide data provided by the [World Bank](https://data.worldbank.org/indicator/VC.IHR.PSRC.P5?end=2017&start=1990&view=chart) is a weighted average of each country and their annual homicides per 100,000 people, from 1992 to 2017. An intentional homicide is an ["estimate of unlawful  homicides purposely inflicted as a result of domestic disputes, interpersonal violence, violent conflicts over land  resources, intergang violence over turf or control, and predatory violence and killing by armed groups."](https://data.worldbank.org/indicator/VC.IHR.PSRC.P5?end=2017&start=1990&view=chart)
+
+In order to wrangle this data, I first grouped each country's homicide data into the specific year it happened. I then took the mean of every country's homicide rate per year to get one "global rate" per year. (Below is a sample from the first 6 years of my wrangled data.)
+
+
+```{r murder_data_sample, echo=FALSE}
+kable(murder_data_sample)
+```
+
+**My analysis of the global homicide rates from 1990-2017 resulted in the following graphcial representation.**
+
+
+```{r murder_plot, echo=FALSE}
+murder_plot
+```
+
+#### Evaluaton
+Watching the news or going on social media may give somebody the impression that the world is getting worse everyday.  However, when it comes to murder, the global rate seems to have been in decline since the mid 1990's. In fact, since 1994, the rate  has *decreased* by over **`r percent_change`%**. Some other interesting peices of data I gathered from my analysis were that over  the last 26 years, the *average global homicide rate (per 100,000 people)* has been **`r mean_rate`**.  Additionaly, the  year 1994 had the *highest murder rate*, **`r max_rate`**, while 2013 had the *lowest rate*, **`r min_rate`**.
+
+
+### From the past 10 years, what is the most dangerous area (cardinal direction) of Seattle based on the crime rate?
+
+This question aims to answer what area of Seattle is most dangerous.  The area or cardinal direction means North, South, etc. (area may also be referred to as Precinct). The area is determined 'dangerous' based on the amount of crimes committed in that area in the last 10 years. 
+
+To analyze the Seattle crime data I took data and filtered down to the cardinal directions with their corresponding total amount of crimes in that area for the past 10 years starting from 2009.  The data compares crime rate (number of crimes committed) to the area of Seattle it was committed in.  
+
+```{r crime_area_se.R, echo=FALSE}
+kable(total_crime_area)
+
+crime_area_plot
+
+analysis_list <- summary_analysis_1
+
+```
+
+To conclude the question, the plot shows that the North area is the most dangerous with `r analysis_list[[5]]` crimes committed.  This shows that North Seattle is in theory, the most dangerous area to live in due to the amount of crimes that were committed in that Precinct in the last 10 years.  The North is responsible for about `r analysis_list[[4]]` of all the crimes in the last 10 years.  Some of the Neighborhoods that are included in the North cardinal direction are University District, Wallingford, Northgate, as well as others.  This is a concern because as students who attend the University of Washington, we want to feel safe, and looking at this data shows unsettling results of the area we live in.  Overall this data shows that the north has the most crimes committed in the past 10 years possible making it a dangerous place to reside, while also comparing it to other locations in Seattle that might be a safer place to live.  
+
+Interesting Stats from the crimes committed in the past 10 years in seattle: 
+
+- The total amount of crimes ~ `r analysis_list[[1]]` 
+- Most common crime ~ `r analysis_list[[2]]` (Stealing items from a vehicle)
+- Average crimes committed per year ~ `r analysis_list[[3]]` 
+
+
+
+### Does Seattle Have a Higher or Lower Homicide rate than the National Average?
+
+Intro: My question explores the difference in homicide rate between the Seattle Area and the United States as a whole. Homicide "rate" refers to the number of intentional killings over a year, per 100,000 people.  This is a statistic is indicative of he effectiveness of policing, local legislation, and the overall safety of an area.
+
+Data Analysis method: For my purposes, I used homicide rate data from the [World Bank API](https://data.worldbank.org/indicator/VC.IHR.PSRC.P5), and raw Crime Data from the [Seattle City portal](https://data.seattle.gov/Public-Safety/Crime-Data/4fs7-3vj5), and filtered it down to only homicide.  Typical homicide data reports have the crimes listed as a rate per 100,000 people, so to match this convention I divided the yearly totals by 100,000.  The Data was then organized into the following bar chart to display the yearly rates side by side.  
+
+```{r homicide_rate_seattle_USA, echo=FALSE}
+
+comp_hom_rate
+
+
+```
+
+My data clearly shows that Seattle has a far lower homicide rate than the United States as a whole, despite having an increased overall rate over the past 20 years.  In fact, Seattle has a rate that is roughly half the national average, and sometimes even less!  What is interesting to consider as well, is that while the national rate has declined by about 50% over the past ~30 years, the Seattle rate has climbed greatly over the same time. It's hard to say what caused this great increase, but experts writing for [Seattle Business Magazine](https://www.seattlebusinessmag.com/tourismhospitality/downtown-seattles-rising-crime-rate-stings-citys-hospitality-sector) think that rising homelessness and street violence could be possible causes. 
+
+
+
+### How does Seattle compare to Denver and Washington D.C. in terms of robbery, burglary, and aggrevated-assault rates from 2018?
+
+This question's goal is to get an understanding of how Seattle matches up to the two U.S. cities with the closest  population sizes in crime rates for a group of destructive crimes in the year 2018. To measure the "rates" of each crime in each city, I counted the amount of crimes in each city's open crime data set for the year 2018 that fit under the categories of robbery, burglary, and aggrevated-assualt. 
+
+To do this, I first filtered each of the three city data sets for only crimes that occured in 2018. Then, I modified the the names of every crime category column of each data set to be the same in order to join all three tables on that column. I also changed the name of every individual crime so that after counting them all, I could group them together in order to create a plot comparing them. Finally, I multipled every count of Denver and Washington D.C. crimes by a proportional factor in order to account for their slightly lower population sizes. 
+
+The following table and plot show the results of the rates of each crime for each city, with the proportional adjustment:
+
+```{r city_comparision_plot, echo=FALSE}
+kable(city_comparison_df)
+
+city_comparision_plot
+```
+
+In evaluation of the three city data sets, it is apparent that Seattle is ailed with the highest crime rates among these three cities for the destuctive crimes analyzed. For instance, Seattle has a greater crime rate for two of the three crimes (Aggravated-Assault and Burglary), with Seattle's Burglary rate significantly outnumbering the other two cities: 
+
+ - D.C. Burglary: `r city_comparison_df[8, "crime_amount"]`
+ 
+ - Denver Burglary: `r city_comparison_df[5, "crime_amount"]`
+ 
+ - Seattle Burglary: **`r city_comparison_df[2, "crime_amount"]`**
+
+
+
+
